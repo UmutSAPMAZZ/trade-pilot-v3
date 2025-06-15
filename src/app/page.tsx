@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { fetchBinanceCandles } from '@/data/fetchCandles'
-import { calculateEMA, calculateRSI } from '@/indicators/calculateIndicators'
+import { EMA, calculateRSI } from '@/indicators/calculateIndicators'
 import { evaluateSignal } from '@/engine/evaluateSignal'
 import { COINS } from '@/constants/coins'
+// import { optimizeParameters } from '@/backtest/optimizer'
 
 type SignalResult = {
   coin: string
@@ -21,11 +22,17 @@ export default function HomePage() {
       const results: SignalResult[] = []
 
       for (const symbol of COINS) {
-        const prices = await fetchBinanceCandles(symbol)
-        const ema20 = calculateEMA(prices.slice(-20), 20)
-        const ema50 = calculateEMA(prices.slice(-50), 50)
-        const rsi = calculateRSI(prices.slice(-15), 14)
-        const lastPrice = prices[prices.length - 1]
+        const prices = await fetchBinanceCandles(symbol, '1d', 100)
+        console.log(`Veriler alındı: ${symbol} - ${prices.length} mum`, Array.isArray(prices))
+        const closes = prices.map(c => c.close)
+        const ema20Arr = EMA(closes.slice(-20), 20)
+        const ema50Arr = EMA(closes.slice(-50), 50)
+        const rsiArr = calculateRSI(prices.slice(-15), 14)
+        const rsi = Array.isArray(rsiArr) ? rsiArr[rsiArr.length - 1] : rsiArr
+        const lastPrice = closes[closes.length - 1]
+
+        const ema20 = Array.isArray(ema20Arr) ? ema20Arr[ema20Arr.length - 1] : ema20Arr
+        const ema50 = Array.isArray(ema50Arr) ? ema50Arr[ema50Arr.length - 1] : ema50Arr
 
         const decision = evaluateSignal({ ema20, ema50, rsi })
 
@@ -45,6 +52,8 @@ export default function HomePage() {
 
     return () => clearInterval(interval)
   }, [])
+
+  
 
   return (
     <main className="p-10 text-center">
