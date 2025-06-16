@@ -9,12 +9,14 @@ import { emaMacdStrategy } from "@/strategies/emaMacdStrategy"; // ikinci strate
 import { StrategyFunction, StrategyParams, TradeResult } from "@/backtest/types";
 import { adxRsiStrategy } from "@/strategies/adxRsiStrategy";
 import { advancedComboStrategy } from "@/strategies/advencedComboStrategy";
+import { generateSignalWithGemini } from "@/signals/geminiSignal";
 
 const strategies = {
   emaRsiStrategy,
   emaMacdStrategy,
   adxRsiStrategy,
-  advancedComboStrategy
+  advancedComboStrategy,
+  generateSignalWithGemini
 };
 
 const coinList = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "AVAXUSDT"];
@@ -28,7 +30,7 @@ export default function BacktestPage() {
   const [results, setResults] = useState<ReturnType<typeof analyzeResults> | null>(null);
 
   const handleBacktest = async () => {
-    const candles = await fetchBinanceCandles(symbol, '1h', 10000);
+    const candles = await fetchBinanceCandles(symbol, '1h', 50);
     const strategy = strategies[strategyName];
 
     const trades = await runBacktest(candles, strategy as StrategyFunction, { tp, sl, maxHold });

@@ -89,6 +89,8 @@ import { predictSignal } from "@/ml/predictSignal";
 import { MLPModel } from "@/ml/mlpModel";
 import { fetchTrainingData } from "@/data/fetchCandles";
 import { prepareData } from "@/data/prepareData";
+import { generateSignalWithGemini, getGeminiSignals } from "@/signals/geminiSignal";
+import { runGeminiBacktest } from "./geminiBacktest";
 
 // Artık parametre alıyor!
 export async function runBacktest(
@@ -102,10 +104,15 @@ export async function runBacktest(
   maxHold: 10
 });
 
-  useModel();
 
-  const trades = simulateTrades(candles, signals, params);
-  const results = analyzeResults(trades);
+
+  // const trades = simulateTrades(candles, signals, params);
+  // const results = analyzeResults(trades);
+
+  const geminiSignals = await getGeminiSignals(candles, 10);
+
+    const results = runGeminiBacktest(candles, geminiSignals);
+  
   return results;
 }
 
